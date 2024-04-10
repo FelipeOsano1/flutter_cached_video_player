@@ -52,8 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late CachedVideoPlayerController controller;
   @override
   void initState() {
-    controller = CachedVideoPlayerController.network(
-        "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
+    controller = CachedVideoPlayerController.networkUrl(Uri.parse("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"));
     controller.initialize().then((value) {
       controller.play();
       setState(() {});
@@ -77,9 +76,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
           child: controller.value.isInitialized
-              ? AspectRatio(
-                  aspectRatio: controller.value.aspectRatio,
-                  child: CachedVideoPlayer(controller))
+              ? AspectRatio(aspectRatio: controller.value.aspectRatio, child: CachedVideoPlayer(controller))
               : const CircularProgressIndicator()), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }

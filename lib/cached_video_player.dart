@@ -458,6 +458,7 @@ class CachedVideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         case VideoEventType.bufferingEnd:
           value = value.copyWith(isBuffering: false);
           break;
+
         case VideoEventType.unknown:
           break;
       }

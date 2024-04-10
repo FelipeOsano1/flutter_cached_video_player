@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:flutter/foundation.dart' show immutable, objectRuntimeType;
+
 import 'sub_rip.dart';
+
 export 'sub_rip.dart' show SubRipCaptionFile;
 
 /// A structured representation of a parsed closed caption file.
@@ -26,6 +29,7 @@ abstract class ClosedCaptionFile {
 ///
 /// A typical closed captioning file will include several [Caption]s, each
 /// linked to a start and end time.
+@immutable
 class Caption {
   /// Creates a new [Caption] object.
   ///
@@ -62,10 +66,23 @@ class Caption {
 
   @override
   String toString() {
-    return '$runtimeType('
+    return '${objectRuntimeType(this, 'Caption')}('
         'number: $number, '
         'start: $start, '
         'end: $end, '
         'text: $text)';
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Caption && runtimeType == other.runtimeType && number == other.number && start == other.start && end == other.end && text == other.text;
+
+  @override
+  int get hashCode => Object.hash(
+        number,
+        start,
+        end,
+        text,
+      );
 }
