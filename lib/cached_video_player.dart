@@ -375,10 +375,6 @@ class CachedVideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
   /// Attempts to open the given [dataSource] and load metadata about the video.
   Future<void> initialize() async {
-    final bool allowBackgroundPlayback = videoPlayerOptions?.allowBackgroundPlayback ?? false;
-    if (!allowBackgroundPlayback) {
-      _lifeCycleObserver = _VideoAppLifeCycleObserver(this);
-    }
     _lifeCycleObserver?.initialize();
     _creatingCompleter = Completer<void>();
 
@@ -464,8 +460,11 @@ class CachedVideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       }
     }
 
-    if (_closedCaptionFileFuture != null) {
-      await _updateClosedCaptionWithFuture(_closedCaptionFileFuture);
+    if (_closedCaptionFile != null) {
+      if (_closedCaptionFile == null) {
+        _closedCaptionFile = await _closedCaptionFile;
+      }
+      value = value.copyWith(caption: _getCaptionAt(value.position));
     }
 
     void errorListener(Object obj) {
@@ -703,42 +702,10 @@ class CachedVideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   }
 
   /// Returns the file containing closed captions for the video, if any.
-  Future<ClosedCaptionFile>? get closedCaptionFile {
-    return _closedCaptionFileFuture;
-  }
-
-  /// Sets a closed caption file.
-  ///
-  /// If [closedCaptionFile] is null, closed captions will be removed.
-  Future<void> setClosedCaptionFile(
-    Future<ClosedCaptionFile>? closedCaptionFile,
-  ) async {
-    await _updateClosedCaptionWithFuture(closedCaptionFile);
-    _closedCaptionFileFuture = closedCaptionFile;
-  }
-
-  Future<void> _updateClosedCaptionWithFuture(
-    Future<ClosedCaptionFile>? closedCaptionFile,
-  ) async {
-    _closedCaptionFile = await closedCaptionFile;
-    value = value.copyWith(caption: _getCaptionAt(value.position));
-  }
 
   void _updatePosition(Duration position) {
-    value = value.copyWith(
-      position: position,
-      caption: _getCaptionAt(position),
-      isCompleted: position == value.duration,
-    );
-  }
-
-  @override
-  void removeListener(VoidCallback listener) {
-    // Prevent VideoPlayer from causing an exception to be thrown when attempting to
-    // remove its own listener after the controller has already been disposed.
-    if (!_isDisposed) {
-      super.removeListener(listener);
-    }
+    value = value.copyWith(position: position);
+    value = value.copyWith(caption: _getCaptionAt(position));
   }
 
   bool get _isDisposedOrNotInitialized => _isDisposed || !value.isInitialized;
@@ -825,12 +792,7 @@ class _CachedVideoPlayerState extends State<CachedVideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return _textureId == CachedVideoPlayerController.kUninitializedTextureId
-        ? Container()
-        : _VideoPlayerWithRotation(
-            rotation: widget.controller.value.rotationCorrection,
-            child: _videoPlayerPlatform.buildView(_textureId),
-          );
+    return _textureId == CachedVideoPlayerController.kUninitializedTextureId ? Container() : _videoPlayerPlatform.buildView(_textureId);
   }
 }
 
